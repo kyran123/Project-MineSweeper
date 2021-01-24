@@ -1,1 +1,1 @@
-MineSweeper
+A practice project to teach VueJS & Electron to a friend

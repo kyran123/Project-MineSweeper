@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="../Libraries/Jquery/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.js"></script>
+        <script src="https://unpkg.com/vuex"></script>
+    </head>
+    <body>
+        <div id="app">
+            <div class="top-bar"></div>
+            <game-menu v-show="showMenu"></game-menu>
+            <game-board v-show="!showMenu && gameMode == 0"></game-board>
+            <login v-show="showLoginScreen"></login>
+        </div>
+    </body>
+    <script type="module">
+        import gameBoard from '../Javascript/Components/Ranked/GameBoard.js';
+        import eventBus from '../Javascript/Utility/EventBus.js';
+        import gameMenu from '../Javascript/Components/Menu/Menu.js';
+        import login from '../Javascript/Components/Menu/Login.js';
+        let app = new Vue({
+            el: '#app',
+            components: {
+                gameBoard,
+                gameMenu,
+                login
+            },
+            data() {
+                return {
+                    showLoginScreen: false,
+                    gameMode: 0
+                }
+            },
+            computed: {
+                css: function() {
+                    return `
+                        <style>
+                            @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Roboto+Slab:wght@300;400;500;600;700&display=swap');
+                            body {
+                                font-family: 'Roboto Slab' !important;
+                                padding: 0;
+                                margin: 0;
+                                display: grid;
+                            }
+                            .btn-main {
+                                width: calc(100% - 50px);
+                                font-size: 1.3em;
+                                font-weight: 600;
+                                font-family: 'Roboto Slab' !important;
+                                text-align: right;
+                                border-bottom: 1px solid rgb(34 35 37);
+                                padding-left: 25px !important;
+                                padding-right: 25px !important;
+                                padding-top: 5px !important;
+                                padding-bottom: 5px !important;
+                            }
+                            .btn-main:hover {
+                                background: rgb(34 35 37);
+                                cursor: pointer;
+                            }
+                            .btn-custom {
+                                padding-left: 25px !important;
+                                padding-right: 25px !important;
+                                padding-top: 5px !important;
+                                padding-bottom: 5px !important;
+                                border-radius: 5px;
+                                width: 150px;
+                                border: 2px solid #111;
+                                text-align: center;
+                                font-size: 1.1em;
+                                margin-bottom: 15px;
+                                margin-top: 5px;
+                                background: rgb(47, 49, 54);
+                                line-height: 1.1em;
+                                margin: auto;
+                            }
+                            .btn-custom:hover {
+                                background: rgb(40 41 45);
+                                cursor: pointer;
+                            }
+                            input[type="text"] {
+                                padding-left: 15px !important;
+                                padding-right: 15px !important;
+                                padding-top: 5px !important;
+                                padding-bottom: 5px !important;
+                                border-radius: 5px;
+                                width: 175px;
+                                border: 2px solid #111;
+                                text-align: left;
+                                font-size: 1.1em;
+                                margin-bottom: 15px;
+                                margin-top: 5px;
+                                background: rgb(47, 49, 54);
+                                line-height: 1.1em;
+                                margin: auto;
+                                color: #fff;
+                            }
+                            input[type="text"]:focus {
+                                outline: none;
+                            }
+
+
+
+                            .btn {
+                                background: url('../Assets/Images/boardTilted1.png');
+                                background-size: cover;
+                                background-position: center;
+                                color: #fff;
+                                text-shadow: 0 0 10px #000;
+                                font-size: 1.3em;
+                                font-weight: 600;
+                                font-family: 'Roboto Slab' !important;
+                                text-align: center;
+                            }
+                            .btn:hover {
+                                cursor: pointer;
+
+                            }
+                            .btn:hover div {
+                                background: rgba(0, 0, 0, 0.3);
+                            }
+                            .btn div {
+                                height: 100%;
+                                background: rgba(0, 0, 0, 0.2);
+                            }
+                            .top-bar {
+                                height: 1vh;
+                                width: 100vw;
+                                background: rgb(32, 34, 37);
+                            }
+                        </style>
+                    `
+                },
+                showMenu: function() { return this.$store.getters.onMenu }
+            },
+            store: new Vuex.Store({
+                state: {
+                    board: {
+                        width: 30,
+                        height: 16
+                    },
+                    user: {
+                        name: '',
+                        id: 0
+                    },
+                    ranked: {
+                        best: 0,
+                        total: 0,
+                        plays: 0
+                    },
+                    leaderBoard: [],
+                    GameIsFinsihed: false,
+                    showMenu: true,
+                    isRanked: false,
+                    developmentMode: false
+                },
+                getters: {
+                    getBoardWidth: (state) => {
+                        return state.board.width;
+                    },
+                    getBoardHeight: (state) => {
+                        return state.board.height;
+                    },
+                    getGameState: (state) => {
+                        return state.GameIsFinsihed;
+                    },
+                    onMenu: (state) => {
+                        return state.showMenu;
+                    },
+                    isDevMode: (state) => {
+                        return state.developmentMode;
+                    },
+                    getUser: (state) => {
+                        return state.user;
+                    },
+                    getHighscore: (state) =>{
+                        return state.ranked.best;
+                    },
+                    getTotalTime: (state) => {
+                        return state.ranked.total;
+                    },
+                    getTotalPlays: (state) => {
+                        return state.ranked.plays;
+                    },
+                    getGameMode: (state) => {
+                        return state.isRanked;
+                    },
+                    getLeaderBoard: (state) => {
+                        return state.leaderBoard;
+                    }
+                },
+                mutations: {
+                    setBoardWidth: (state, value) => {
+                        state.board.width = value;
+                    },
+                    setBoardHeight: (state, value) => {
+                        state.board.height = value;
+                    },
+                    setGameToFinished: (state) => {
+                        state.GameIsFinsihed = true;
+                    },
+                    setMenuState: (state, value) => {
+                        state.showMenu = value;
+                    },
+                    resetGameState: (state) => {
+                        state.GameIsFinsihed = false;
+                    },
+                    setRanked: (state, value) => {
+                        state.isRanked = value;
+                    },
+                    setUsername: (state, value) => {
+                        state.user.name = value;
+                    },
+                    setUserId: (state, value) => {
+                        state.user.id = value;
+                    },
+                    setHighscore: (state, value) => {
+                        state.ranked.best = value.data.score_time;
+                    },
+                    setTotalTime: (state, value) => {
+                        state.ranked.total = value.data.total_time;
+                    },
+                    setTotalPlays: (state, value) => {
+                        state.ranked.plays = value.data.total_plays;
+                    },
+                    setLeaderboard: (state, value) => {
+                        state.leaderBoard = value;
+                    }
+                }
+            }),
+            mounted() {
+                $('head').append(this.css);
+                window.onload = () => {
+                    window.API.send('getLeaderboard'); 
+                    window.API.receive('gameData', (data) => {
+                        eventBus.$emit("gameBoardData", data);
+                    });
+                    window.API.receive('showLoginScreen', () => {
+                        this.showLoginScreen = true;
+                    });
+                    eventBus.$on("showLoginScreen", () => {
+                        this.showLoginScreen = true;
+                    });
+                    window.API.receive('toMainMenu', (userData) => {
+                        this.$store.commit('setUsername', userData.name);
+                        this.$store.commit('setUserId', userData.id);
+                        this.showLoginScreen = false;
+                    });
+                    window.API.send('getOwnScore');
+                    window.API.receive("showLeaderboard", (data) => {
+                        console.log(data);
+                        this.$store.commit('setLeaderboard', data);
+                    });
+                    window.API.receive('rankedData', (rankedData) => {
+                        if(!rankedData.result) return;
+                        this.$store.commit('setHighscore', rankedData);
+                        this.$store.commit('setTotalTime', rankedData);
+                        this.$store.commit('setTotalPlays', rankedData);
+                    });
+                    window.API.send('showWindow');
+                    eventBus.$on("updateGameMode", (nr) => {
+                        this.gameMode = nr;
+                    });
+                }
+            }
+        })
+
+    </script>
+</html>

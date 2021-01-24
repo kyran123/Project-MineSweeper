@@ -1,0 +1,8 @@
+/.vscode
+/Assets
+/Dist
+/node_modules
+/Libraries
+/Backup
+*.exe
+.env
